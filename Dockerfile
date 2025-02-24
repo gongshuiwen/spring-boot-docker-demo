@@ -10,7 +10,7 @@ ARG MVNW_USERNAME
 ARG MVNW_PASSWORD
 ARG MVNW_VERBOSE
 
-# Set up Maven settings mirror repository
+# Set up Maven mirror repository (Use the same config of Maven Wrapper)
 RUN --mount=type=cache,target=/root/.m2 \
     echo '<?xml version="1.0" encoding="UTF-8"?> \
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0" \
