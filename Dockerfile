@@ -34,8 +34,9 @@ RUN --mount=type=cache,target=/root/.m2 \
 </settings>' > /root/.m2/settings.xml
 
 # Copy only the files needed for dependency resolution first
-COPY .mvn .mvn/
-COPY mvnw pom.xml ./
+COPY .mvn/ .mvn/
+COPY --chmod=544 mvnw ./
+COPY pom.xml ./
 
 # Download dependencies with caching
 RUN --mount=type=cache,target=/root/.m2 ./mvnw dependency:go-offline -B
@@ -55,10 +56,11 @@ FROM eclipse-temurin:21-jre-alpine
 # Set working directory
 WORKDIR /app
 
-# Install required packages and create non-root user
-RUN apk add --no-cache curl && \
-    addgroup -g 1000 spring && \
-    adduser -u 1000 -G spring -s /bin/sh -D spring
+# Install required packages
+RUN apk add --no-cache curl
+
+# Create non-root user
+RUN addgroup -g 1000 spring && adduser -u 1000 -G spring -s /bin/sh -D spring
 
 # Copy layers from builder stage
 COPY --from=builder --chown=spring:spring /build/extracted/dependencies/ ./
@@ -73,7 +75,7 @@ ENV TZ=Asia/Shanghai \
     JAVA_OPTS=""
 
 # Set HEALTHCHECK
-HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
+HEALTHCHECK --start-period=20s --interval=10s --timeout=5s --retries=3 \
     CMD curl -f http://localhost:8080/actuator/health || exit 1
 
 # Switch to non-root user
